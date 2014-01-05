@@ -4,7 +4,7 @@
 // ==UserScript==
 // @name			C_ReviewPage_Timepublisher
 // @namespace		ReviewPage_Timepublisher
-// @version			1.21
+// @version			1.21222
 // @downloadURL   	https://ssl.webpack.de/eulili.de/greasemonkey/ReviewPage_Timepublisher/ReviewPage_Timepublisher.user.js
 // @updateURL		http://www.eulili.de/greasemonkey/ReviewPage_Timepublisher/ReviewPage_Timepublisher.user.js
 // @include			http://www.geocaching.com/admin/review.aspx*
