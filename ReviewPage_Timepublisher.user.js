@@ -4,7 +4,7 @@
 // ==UserScript==
 // @name			C_ReviewPage_Timepublisher
 // @namespace		ReviewPage_Timepublisher
-// @version			1.22
+// @version			1.23
 // @downloadURL   	https://ssl.webpack.de/eulili.de/greasemonkey/ReviewPage_Timepublisher/ReviewPage_Timepublisher.user.js
 // @updateURL		http://www.eulili.de/greasemonkey/ReviewPage_Timepublisher/ReviewPage_Timepublisher.user.js
 // @include			http://www.geocaching.com/admin/review.aspx*
@@ -77,6 +77,9 @@
 //	v01.20		2013-12-23 TBD		Bugfix: Wenn ein einstelliges Datum ausgewählt wurde brach das Skript mit der Fehlermeldung ab, da die entsprechende Case-Anweisung nur Werte wie "01","02" geprüft hat.
 //	v01.21		2014-01-02 TBD		Bugfix: Wenn Sonderzeichen im Namen des CO enthalten sind bricht das Skript nicht mehr ab, oder läuft in eine Endlosschleife.
 //  v01.22      2014-01-08 TBD		Sollte das Skript nach dem erstellen des Bookmark-Eintrages für den Cache nicht in der Lage sein den Cache auf der Bookmark-Liste wieder zu finden liegt dies vermutlich daran dass die Bookmark-Liste nur XX Caches pro Seite anzeigt. Das Skript merkt dies nun und stellt die CachesProSeite auf 1000. Danach sollte der Cache gefunden werden. Falls nicht wird eine Fehlermeldung ausgegeben: "Der Cache für den Timepublish-Vorgang wurde nicht in der Bookmark-Liste gefunden.".
+//  v01.23		2014-01-09 TBD		Bugfix: Fehlerhafte Anrede. Aufgrund Fehler in den internen Funktionen GetDefaultTemplateText_morgen(), GetDefaultTemplateText_wunsch() und GetDefaultTemplateText_sonstiges() wurde die Anrede im Template nicht richtig versendet.
+									NewFeature: Die Voreintellung für den Timepublish Typ ("Morgen", "Wunschdatum" und "Sonstiges) kann in den Einstellungen ausgewählt werden.
+									NewFeature: Die Einstellungen des Skriptes sollen zusätzlich über ein "Settings-Icon" in der grünen Timepublish-Box der Review-Ansicht aufgerufen werden können. 
 */
 
 // Prototyp Funktionen
@@ -147,7 +150,7 @@ Zeit.setTime(morgen);                           //Neue Zeit setzen
 var Jahr = Zeit.getYear()+1900;                      //Neues Jahr auslesen
 var Monat = Zeit.getMonth()+1;                  //Neuen Monat auslesen + Korrektur
 var Tag = Zeit.getDate();                       //Neue Tag auslesen
-
+var vBmLDefaultTPType = GM_getValue('Timepublisher_BmLDefaultTPType_' + SignedInAs, 'Morgen');
 
 if ( $('#ctl00_ContentBody_lnkBookmark').length > 0 ) {
 	var LinkValue  = '<form id="BookPub" name="form1" method="post">';
@@ -205,15 +208,25 @@ if ( $('#ctl00_ContentBody_lnkBookmark').length > 0 ) {
 		LinkValue += '  	<option value="2330">23:30</option>';
 		LinkValue += '  </select>';
 		LinkValue += '  <select name="Wunschtyp" id="Wunschtyp" title="Hinweis Text-Ausgabeart zum CO">';
-		LinkValue += '  	<option value="morgen" selected>Morgen</option>';
-		LinkValue += '  	<option value="wunsch">Wunschdatum</option>';
-		LinkValue += '  	<option value="sonstiges">Sonstiges</option>';
+		if (vBmLDefaultTPType=='Morgen')
+		{	LinkValue += '  	<option value="morgen" selected>Morgen</option>';		}
+		else
+		{	LinkValue += '  	<option value="morgen">Morgen</option>';		}
+		if (vBmLDefaultTPType=='Wunschdatum')
+		{	LinkValue += '  	<option value="wunsch" selected>Wunschdatum</option>';		}
+		else
+		{	LinkValue += '  	<option value="wunsch">Wunschdatum</option>';		}
+		if (vBmLDefaultTPType=='Sonstiges')
+		{	LinkValue += '  	<option value="sonstiges" selected>Sonstiges</option>';	}
+		else
+		{	LinkValue += '  	<option value="sonstiges">Sonstiges</option>';	}
 		LinkValue += '  </select>';	
 		LinkValue += '  <input type="button" name="button" id="WunschzeitButton" value="Timepublish" >';
+		LinkValue += '  <img id="TPSetButton" src="/images/icons/16/edit.png" >';
 		LinkValue += '</form>';
 
-		
 	$('#ctl00_ContentBody_lnkBookmark').parent().after().append(LinkValue);
+	document.getElementById('TPSetButton').addEventListener("click", fSetOptions, false);
 }
 
 
@@ -607,6 +620,7 @@ function addLeadingZeros(number, length) {
 		var vBmLTemplate_Morgen_val    	= GM_getValue('Timepublisher_BmLTemplate_Morgen_'    + SignedInAs, GetDefaultTemplateText_morgen());
 		var vBmLTemplate_Wunsch_val    	= GM_getValue('Timepublisher_BmLTemplate_Wunsch_'    + SignedInAs, GetDefaultTemplateText_wunsch());
 		var vBmLTemplate_Sonstiges_val 	= GM_getValue('Timepublisher_BmLTemplate_Sonstiges_' + SignedInAs, GetDefaultTemplateText_sonstiges());
+		var vBmLDefaultTPType			= GM_getValue('Timepublisher_BmLDefaultTPType_'		 + SignedInAs, 'Morgen');
 		
 		// Interface controls
 		var Opt1 = document.createElement('span');
@@ -636,6 +650,13 @@ function addLeadingZeros(number, length) {
 		var txtBmLTemplate_Sonstiges = fCreateSetting('optBmLTemplate_Sonstiges', 'textarea', '', '', vBmLTemplate_Sonstiges_val, '115px');
 		txtBmLTemplate_Sonstiges.parentNode.insertBefore(Opt5, txtBmLTemplate_Sonstiges);
 
+		var Opt6 = document.createElement('span');
+		var vSelVal = ["Morgen","Wunschdatum","Sonstiges"];
+		var vSelTxt = ["Morgen","Wunschdatum","Sonstiges"];
+		Opt6.innerHTML = '<br>Voreingestellter Timepublish-Typ: <br>';
+		var txtBmLDefaultTPType = fCreateSetting('optDefaultTPType', 'select', '', '', vBmLDefaultTPType, '215px',vSelVal, vSelTxt);
+		txtBmLDefaultTPType.parentNode.insertBefore(Opt6, txtBmLDefaultTPType);
+		
 		//  Create Save/Cancel Buttons.
 		var ds_ButtonsP = document.createElement('div');
 		ds_ButtonsP.setAttribute('class', 'SettingButtons');
@@ -679,16 +700,17 @@ function addLeadingZeros(number, length) {
 		
 		var vBmLName_val = document.getElementById('txtBmLName');
 		var vBmLStop_val = document.getElementById('seloptBmEExistsStop');
-
 		var vBmLTemplate_Morgen_val = document.getElementById('txtaraoptBmLTemplate_Morgen');
 		var vBmLTemplate_Wunsch_val = document.getElementById('txtaraoptBmLTemplate_Wunsch');
 		var vBmLTemplate_Sonstiges_val = document.getElementById('txtaraoptBmLTemplate_Sonstiges');
-
+		var vBmLDefaultTPType = document.getElementById('seloptDefaultTPType');
+		
 		GM_setValue('Timepublisher_BmLName_' + SignedInAs, vBmLName_val.value.trim());
 		GM_setValue('Timepublisher_BmLStop_' + SignedInAs, vBmLStop_val.options[vBmLStop_val.selectedIndex].value);
 		GM_setValue('Timepublisher_BmLTemplate_Morgen_' + SignedInAs, vBmLTemplate_Morgen_val.value.trim());
 		GM_setValue('Timepublisher_BmLTemplate_Wunsch_' + SignedInAs, vBmLTemplate_Wunsch_val.value.trim());
 		GM_setValue('Timepublisher_BmLTemplate_Sonstiges_' + SignedInAs, vBmLTemplate_Sonstiges_val.value);
+		GM_setValue('Timepublisher_BmLDefaultTPType_' + SignedInAs, vBmLDefaultTPType.options[vBmLDefaultTPType.selectedIndex].value);
 
 		fCloseSettingsDiv();
 	}
@@ -913,8 +935,8 @@ function addLeadingZeros(number, length) {
 		//********************************************************************************//
 		
 	function GetDefaultTemplateText_morgen() {
-		var	LOGTEXT_S  = "Hallo %CO%\n";
-			LOGTEXT_M  = "Deinen Cache habe ich soeben geprüft und er ist zum Publish bereit.\n\n";
+		var	LOGTEXT_M  = "Hallo %CO%\n";
+			LOGTEXT_M += "Deinen Cache habe ich soeben geprüft und er ist zum Publish bereit.\n\n";
 			LOGTEXT_M += "Um die Natur zu schonen und einen \"Run\" auf den Cache zu vermeiden ";
 			LOGTEXT_M += "werde ich ihn morgen früh veröffentlichen. ";
 			LOGTEXT_M += "Bis dahin wird Deine Listingseite für alle Änderungen gesperrt.\n\n";
@@ -925,8 +947,8 @@ function addLeadingZeros(number, length) {
 	}
 	
 	function GetDefaultTemplateText_wunsch() {
-		var LOGTEXT_S  = "Hallo %CO%\n";
-			LOGTEXT_W  = "Deinen Cache habe ich soeben geprüft und er ist zum Publish bereit.\n\n";
+		var LOGTEXT_W  = "Hallo %CO%\n";
+			LOGTEXT_W += "Deinen Cache habe ich soeben geprüft und er ist zum Publish bereit.\n\n";
 			LOGTEXT_W += "Ich werde versuchen Deinen Wunsch zu erfüllen und den Cache am ";
 			LOGTEXT_W += "gewünschten Tag freizuschalten. ";
 			LOGTEXT_W += "Allerdings kann ich nicht garantieren, dass dies zum ";
@@ -940,7 +962,7 @@ function addLeadingZeros(number, length) {
 	
 	function GetDefaultTemplateText_sonstiges() {
 		var	LOGTEXT_S  = "Hallo %CO%\n";
-			LOGTEXT_S  = "\n\n";
+			LOGTEXT_S += "\n\n";
 			LOGTEXT_S += "\n\n";
 			LOGTEXT_S += "Beste Grüße\n%SignedInAs%\nOfficial Geocaching.com Volunteer Reviewer";
 		return LOGTEXT_S;
