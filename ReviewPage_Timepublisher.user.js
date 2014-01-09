@@ -4,7 +4,7 @@
 // ==UserScript==
 // @name			C_ReviewPage_Timepublisher
 // @namespace		ReviewPage_Timepublisher
-// @version			1.21
+// @version			1.22
 // @downloadURL   	https://ssl.webpack.de/eulili.de/greasemonkey/ReviewPage_Timepublisher/ReviewPage_Timepublisher.user.js
 // @updateURL		http://www.eulili.de/greasemonkey/ReviewPage_Timepublisher/ReviewPage_Timepublisher.user.js
 // @include			http://www.geocaching.com/admin/review.aspx*
@@ -76,6 +76,7 @@
 //	v01.19		2013-12-23 TBD		Bugfix: Intern (Übergabe Funktionswert für AufrufFreischalteLink fehlerhaft).
 //	v01.20		2013-12-23 TBD		Bugfix: Wenn ein einstelliges Datum ausgewählt wurde brach das Skript mit der Fehlermeldung ab, da die entsprechende Case-Anweisung nur Werte wie "01","02" geprüft hat.
 //	v01.21		2014-01-02 TBD		Bugfix: Wenn Sonderzeichen im Namen des CO enthalten sind bricht das Skript nicht mehr ab, oder läuft in eine Endlosschleife.
+//  v01.22      2014-01-08 TBD		Sollte das Skript nach dem erstellen des Bookmark-Eintrages für den Cache nicht in der Lage sein den Cache auf der Bookmark-Liste wieder zu finden liegt dies vermutlich daran dass die Bookmark-Liste nur XX Caches pro Seite anzeigt. Das Skript merkt dies nun und stellt die CachesProSeite auf 1000. Danach sollte der Cache gefunden werden. Falls nicht wird eine Fehlermeldung ausgegeben: "Der Cache für den Timepublish-Vorgang wurde nicht in der Bookmark-Liste gefunden.".
 */
 
 // Prototyp Funktionen
@@ -399,19 +400,42 @@ if (UrlParm('PTIME')&&UrlParm('PDATE')&&UrlParm('PGCCODE')&&UrlParm('SBM')) {
 	// Lokal den aktuellen Cache zwischenspeichern
 	localStorage.BookmarkAutoGCCode=UrlParm('PGCCODE');
 	
-	//CO Name aus URL auslesen
-	//var COName = decodeURIComponent(UrlParm('COName'));
-	//var COName = UrlParm('COName').decode;
+	//CO Name aus GM-Variable auslesen
 	var NameOfParam = "Timepublisher_BmLName_COName";
 	var COName = GM_getValue(NameOfParam, '');
+	
+	//Variable erstellen an der nach der Schleife geprüft werden kann ob der Cache in der Bookmark-Liste gefunden wurde
+	var CacheFoundInBmListe = false;
 	
 	// Suche in Bookmarklisten-Tabelle nach GC-Code
 	$('tr[id^="ctl00_ContentBody_ListInfo_BookmarkWpts"][id$="dataRow"] :nth-child(4)').each(function( index ) {
 		if ($(this).text() == UrlParm('PGCCODE')) {
 			$(this).closest('[id$="dataRow"]').find("td:nth-child(1) :input").attr('checked','checked');
 			$('#ctl00_ContentBody_ListInfo_MassPublish').trigger('click');
+			// Wenn der Eintrag gefunden wurde kann die Statusvariable auf true gesetzt werden
+			CacheFoundInBmListe = true;
 			};
 	});
+	
+	// Prüfen ob der Eintrag nicht in der Bookmark-Liste gefunden wurde
+	if (CacheFoundInBmListe==false)
+	{
+		if (document.getElementById('ctl00_ContentBody_ListInfo_cboItemsPerPage'))
+		{
+			var AnzCachesProSeite = document.getElementById('ctl00_ContentBody_ListInfo_cboItemsPerPage').value
+			if (AnzCachesProSeite <= 999)
+			{
+				
+				document.getElementById('ctl00_ContentBody_ListInfo_cboItemsPerPage').selectedIndex = 10;
+				document.getElementById('ctl00_ContentBody_ListInfo_cboItemsPerPage').onchange()
+			}
+			else
+			{
+				alert("Der Cache für den Timepublish-Vorgang wurde nicht in der Bookmark-Liste gefunden.");
+			}
+		}
+	}
+	
 	var PDATEstr = UrlParm('PDATE');
 	var PDATEres = PDATEstr.split("."); 
 	switch (PDATEres[1]) {
