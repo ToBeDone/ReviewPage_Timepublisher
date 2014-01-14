@@ -4,14 +4,14 @@
 // ==UserScript==
 // @name			C_ReviewPage_Timepublisher
 // @namespace		ReviewPage_Timepublisher
-// @version			1.23
+// @version			1.24
 // @downloadURL   	https://ssl.webpack.de/eulili.de/greasemonkey/ReviewPage_Timepublisher/ReviewPage_Timepublisher.user.js
 // @updateURL		http://www.eulili.de/greasemonkey/ReviewPage_Timepublisher/ReviewPage_Timepublisher.user.js
-// @include			http://www.geocaching.com/admin/review.aspx*
-// @include			http://www.geocaching.com/bookmarks/mark.aspx*
-// @include			http://www.geocaching.com/bookmarks/default.aspx*
-// @include			http://www.geocaching.com/bookmarks/view.aspx*
-// @include			http://www.geocaching.com/admin/CachePublish.aspx*
+// @include			*.geocaching.com/admin/review.aspx*
+// @include			*.geocaching.com/bookmarks/mark.aspx*
+// @include			*.geocaching.com/bookmarks/default.aspx*
+// @include			*.geocaching.com/bookmarks/view.aspx*
+// @include			*.geocaching.com/admin/CachePublish.aspx*
 // @icon			http://www.eulili.de/greasemonkey/icons/eichhoernchen.png
 // @description		Timepublish-Link auf Review-Seite
 // @require			http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js
@@ -78,8 +78,9 @@
 //	v01.21		2014-01-02 TBD		Bugfix: Wenn Sonderzeichen im Namen des CO enthalten sind bricht das Skript nicht mehr ab, oder läuft in eine Endlosschleife.
 //  v01.22      2014-01-08 TBD		Sollte das Skript nach dem erstellen des Bookmark-Eintrages für den Cache nicht in der Lage sein den Cache auf der Bookmark-Liste wieder zu finden liegt dies vermutlich daran dass die Bookmark-Liste nur XX Caches pro Seite anzeigt. Das Skript merkt dies nun und stellt die CachesProSeite auf 1000. Danach sollte der Cache gefunden werden. Falls nicht wird eine Fehlermeldung ausgegeben: "Der Cache für den Timepublish-Vorgang wurde nicht in der Bookmark-Liste gefunden.".
 //  v01.23		2014-01-09 TBD		Bugfix: Fehlerhafte Anrede. Aufgrund Fehler in den internen Funktionen GetDefaultTemplateText_morgen(), GetDefaultTemplateText_wunsch() und GetDefaultTemplateText_sonstiges() wurde die Anrede im Template nicht richtig versendet.
-									NewFeature: Die Voreintellung für den Timepublish Typ ("Morgen", "Wunschdatum" und "Sonstiges) kann in den Einstellungen ausgewählt werden.
-									NewFeature: Die Einstellungen des Skriptes sollen zusätzlich über ein "Settings-Icon" in der grünen Timepublish-Box der Review-Ansicht aufgerufen werden können. 
+//									NewFeature: Die Voreintellung für den Timepublish Typ ("Morgen", "Wunschdatum" und "Sonstiges) kann in den Einstellungen ausgewählt werden.
+//									NewFeature: Die Einstellungen des Skriptes sollen zusätzlich über ein "Settings-Icon" in der grünen Timepublish-Box der Review-Ansicht aufgerufen werden können. 
+//  v01.24		2014-01-09 TBD		Erweitereung des Skripts für Staging Server. Statische Links auf relative Adressierung geändert. Includes auf *.geocaching.com geändert.
 */
 
 // Prototyp Funktionen
@@ -321,6 +322,7 @@ if (UrlParm('PTIME')&&UrlParm('PDATE')&&UrlParm('PGCCODE')&&!UrlParm('SBM')) {
 			WeiterleitungsLink += "&TPTyp="+UrlParm('TPTyp');
 			WeiterleitungsLink += "&COName="+UrlParm('COName');
 			WeiterleitungsLink += "&PGCCODE="+UrlParm('PGCCODE')+"&SBM=START";
+		//alert(WeiterleitungsLink);
 		window.location.href= WeiterleitungsLink;
 	} else {
 			if (($('#ctl00_ContentBody_Bookmark_ValidationSummary1').text()).contains(VergleichString1)) {
@@ -339,6 +341,7 @@ if (UrlParm('PTIME')&&UrlParm('PDATE')&&UrlParm('PGCCODE')&&!UrlParm('SBM')) {
 					WeiterleitungsLink += "&PTIME="+UrlParm('PTIME')+"&PDATE="+UrlParm('PDATE');
 					WeiterleitungsLink += "&TPTyp="+UrlParm('TPTyp')+"&COName="+UrlParm('COName');
 					WeiterleitungsLink += "&PGCCODE="+UrlParm('PGCCODE')+"&mod=findguid";
+					//alert(WeiterleitungsLink);
 					window.location.href= WeiterleitungsLink;
 					return;
 					break;
@@ -349,6 +352,7 @@ if (UrlParm('PTIME')&&UrlParm('PDATE')&&UrlParm('PGCCODE')&&!UrlParm('SBM')) {
 					WeiterleitungsLink += "&PTIME="+UrlParm('PTIME')+"&PDATE="+UrlParm('PDATE');
 					WeiterleitungsLink += "&TPTyp="+UrlParm('TPTyp')+"&COName="+UrlParm('COName');
 					WeiterleitungsLink += "&PGCCODE="+UrlParm('PGCCODE')+"&mod=findguid";
+					//alert(WeiterleitungsLink);
 					window.location.href= WeiterleitungsLink;
 					return;
 					break;
@@ -368,6 +372,7 @@ if (UrlParm('PTIME')&&UrlParm('PDATE')&&UrlParm('PGCCODE')&&!UrlParm('SBM')) {
 							WeiterleitungsLink += "&PTIME="+UrlParm('PTIME')+"&PDATE="+UrlParm('PDATE');
 							WeiterleitungsLink += "&TPTyp="+UrlParm('TPTyp')+"&COName="+UrlParm('COName');
 							WeiterleitungsLink += "&PGCCODE="+UrlParm('PGCCODE')+"&mod=findguid";
+							//alert(WeiterleitungsLink);
 							window.location.href= WeiterleitungsLink;
 						}
 					return;
@@ -404,6 +409,7 @@ if (UrlParm('mod')&&UrlParm('PDATE')&&UrlParm('PGCCODE')&&!(UrlParm('SBM'))) {
 		WeiterleitungsLink += "&PTIME="+UrlParm('PTIME')+"&PDATE="+UrlParm('PDATE');
 		WeiterleitungsLink += "&TPTyp="+UrlParm('TPTyp')+"&COName="+UrlParm('COName');
 		WeiterleitungsLink += "&PGCCODE="+UrlParm('PGCCODE')+"&SBM=START";
+	//alert(WeiterleitungsLink);
 	window.location.href= WeiterleitungsLink;
 }
 
@@ -500,7 +506,9 @@ if (UrlParm('PTIME')&&UrlParm('PDATE')&&UrlParm('PGCCODE')&&UrlParm('SBM')) {
 if (window.location.pathname=="/admin/CachePublish.aspx" && localStorage.BookmarkAutoGCCode.length != 0) {
 	GCCode=localStorage.BookmarkAutoGCCode;
 	localStorage.BookmarkAutoGCCode="";
-	window.location.href	= "http://www.geocaching.com/admin/review.aspx?wp="+GCCode;
+	var WeiterleitungsLink = "/admin/review.aspx?wp="+GCCode;
+	//alert (WeiterleitungsLink);
+	window.location.href	= WeiterleitungsLink;
 };
 
 
@@ -575,6 +583,7 @@ function AufrufFreischalteLink(Bookmark_Link,Wunschzeit,WunschDatum,TPTyp,Wunsch
 		WunschzeitText = Wunschzeit;
 	}
 	AufrufLink	= Bookmark_Link+'&PTIME='+WunschzeitText+"&PDATE="+WunschDatum+"&TPTyp="+TPTyp+"&PGCCODE="+WunschGCCode+"&COName="+COName;
+	//alert(AufrufLink);
 	window.location.href	= AufrufLink;	
 }
 
