@@ -4,7 +4,7 @@
 // ==UserScript==
 // @name			C_ReviewPage_Timepublisher
 // @namespace		ReviewPage_Timepublisher
-// @version			1.24
+// @version			1.25
 // @downloadURL   	https://ssl.webpack.de/eulili.de/greasemonkey/ReviewPage_Timepublisher/ReviewPage_Timepublisher.user.js
 // @updateURL		http://www.eulili.de/greasemonkey/ReviewPage_Timepublisher/ReviewPage_Timepublisher.user.js
 // @include			*.geocaching.com/admin/review.aspx*
@@ -81,6 +81,7 @@
 //									NewFeature: Die Voreintellung für den Timepublish Typ ("Morgen", "Wunschdatum" und "Sonstiges) kann in den Einstellungen ausgewählt werden.
 //									NewFeature: Die Einstellungen des Skriptes sollen zusätzlich über ein "Settings-Icon" in der grünen Timepublish-Box der Review-Ansicht aufgerufen werden können. 
 //  v01.24		2014-01-09 TBD		Erweitereung des Skripts für Staging Server. Statische Links auf relative Adressierung geändert. Includes auf *.geocaching.com geändert.
+//	v01.25		2014-01-14 EU		Bei Wahl "morgen" werden nun auch Daten nach "0" Uhr akzeptiert
 */
 
 // Prototyp Funktionen
@@ -155,7 +156,7 @@ var vBmLDefaultTPType = GM_getValue('Timepublisher_BmLDefaultTPType_' + SignedIn
 
 if ( $('#ctl00_ContentBody_lnkBookmark').length > 0 ) {
 	var LinkValue  = '<form id="BookPub" name="form1" method="post">';
-		LinkValue += '  <input type="datepublish" name="datepublish" id="datepublish" value="'+Tag+"."+Monat+"."+Jahr+'"';
+		LinkValue += '  <input type="date" name="datepublish" id="datepublish" value="'+Tag+"."+Monat+"."+Jahr+'"';
 		LinkValue += '   title="Datum als DD.MM.YYYY">';
 		LinkValue += '  <label for="Wunschzeit"> Zeit:</label>';
 		LinkValue += '  <select name="Wunschzeit" id="Wunschzeit" title="Freischaltezeit auswählen">';
@@ -248,32 +249,39 @@ if ($('#ctl00_ContentBody_CacheDetails_Status').text().split(' ')=="(Not,Publish
 			  $('#Wunschzeit').css('background-color','#FFFFFF');
 			  $('#Wunschtyp').css('background-color','#FFFFFF');
 			  Bookmark_Link			= $('#ctl00_ContentBody_lnkBookmark').attr('href');
-			  Wunschzeit				= $('#Wunschzeit option:selected').val();
-			  WunschDatum				= $('#datepublish').val();
+			  Wunschzeit			= $('#Wunschzeit option:selected').val();
+			  WunschDatum			= $('#datepublish').val();
 			  WunschGCCode			= $('#ctl00_ContentBody_CacheDetails_WptRef').text();
 			  TPTyp					= $('#Wunschtyp option:selected').val();
-			  var AufgDatum			= WunschDatum.split(".");
-			  var WZeitH = (Wunschzeit/100).toFixed(0);
-			  var WZeitM = (((Wunschzeit/100)-((Wunschzeit/100).toFixed(0)))*100).toFixed(0);
-			  var NameOfParam = "Timepublisher_BmLName_COName";
+			  var WPublishDate_Arr	= WunschDatum.split(".");
+			  var WZeitH			= (Wunschzeit/100).toFixed(0);
+			  var WZeitM			= (((Wunschzeit/100)-((Wunschzeit/100).toFixed(0)))*100).toFixed(0);
+			  var WPublishZeit_ms	= new Date(WPublishDate_Arr[2],(WPublishDate_Arr[1]-1),WPublishDate_Arr[0],WZeitH,WZeitM);
+			  var NameOfParam		= "Timepublisher_BmLName_COName";
 			  
-		  var PruefZeit1 = new Date(AufgDatum[2],(AufgDatum[1]-1),AufgDatum[0],WZeitH,WZeitM);
+		  
 		  
 		  if (((Tag+"."+Monat+"."+Jahr)==$('#datepublish').val()) &&
 			  ($('#Wunschtyp option:selected').val()=='morgen')) {
 				  GM_setValue(NameOfParam, COName);
 				  AufrufFreischalteLink(Bookmark_Link,Wunschzeit,WunschDatum,TPTyp,WunschGCCode,COName);
 			  }
-		  else if (jetztZeit>PruefZeit1.getTime()) {
+		  else if (jetztZeit>WPublishZeit_ms.getTime()) {
 				  $('#datepublish').css('background-color','#FF0000');
 				  $('#Wunschzeit').css('background-color','#FF0000');
 				  alert ("Die gewünschte Freischaltezeit liegt in der Vergangenheit");
 			  }
 		  else if (((Tag+"."+Monat+"."+Jahr)!=$('#datepublish').val()) &&
 			  ($('#Wunschtyp option:selected').val()=='morgen')) {
-				  $('#datepublish').css('background-color','#FF0000');
-				  $('#Wunschtyp').css('background-color','#FF0000');
-				  alert ("Bitte nochmals prüfen, da morgen nicht der "+$('#datepublish').val()+" ist.");
+				  // Hier muss die Prüfabfrage rein
+				  if ((jetztZeit + (1000*60*60*24))>WPublishZeit_ms.getTime()) {
+					  GM_setValue(NameOfParam, COName);
+					  AufrufFreischalteLink(Bookmark_Link,Wunschzeit,WunschDatum,TPTyp,WunschGCCode,COName);
+				  } else {
+					  $('#datepublish').css('background-color','#FF0000');
+					  $('#Wunschtyp').css('background-color','#FF0000');
+					  alert ("Bitte nochmals prüfen, da morgen nicht der "+$('#datepublish').val()+" ist.");
+				  }
 			  }
 		  else {
 		  	  GM_setValue(NameOfParam, COName);
