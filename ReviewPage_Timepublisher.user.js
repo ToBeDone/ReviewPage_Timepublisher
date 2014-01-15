@@ -4,7 +4,7 @@
 // ==UserScript==
 // @name			C_ReviewPage_Timepublisher
 // @namespace		ReviewPage_Timepublisher
-// @version			1.25
+// @version			1.26
 // @downloadURL   	https://ssl.webpack.de/eulili.de/greasemonkey/ReviewPage_Timepublisher/ReviewPage_Timepublisher.user.js
 // @updateURL		http://www.eulili.de/greasemonkey/ReviewPage_Timepublisher/ReviewPage_Timepublisher.user.js
 // @include			*.geocaching.com/admin/review.aspx*
@@ -82,6 +82,7 @@
 //									NewFeature: Die Einstellungen des Skriptes sollen zusätzlich über ein "Settings-Icon" in der grünen Timepublish-Box der Review-Ansicht aufgerufen werden können. 
 //  v01.24		2014-01-09 TBD		Erweitereung des Skripts für Staging Server. Statische Links auf relative Adressierung geändert. Includes auf *.geocaching.com geändert.
 //	v01.25		2014-01-14 EU		Bei Wahl "morgen" werden nun auch Daten nach "0" Uhr akzeptiert
+//	v01.26		2014-01-14 TBD		Wunschzeit ist jetzt in den Einstellungen vorkonfigurierbar.
 */
 
 // Prototyp Funktionen
@@ -153,6 +154,7 @@ var Jahr = Zeit.getYear()+1900;                      //Neues Jahr auslesen
 var Monat = Zeit.getMonth()+1;                  //Neuen Monat auslesen + Korrektur
 var Tag = Zeit.getDate();                       //Neue Tag auslesen
 var vBmLDefaultTPType = GM_getValue('Timepublisher_BmLDefaultTPType_' + SignedInAs, 'Morgen');
+var vBmLDefaultTPTime = GM_getValue('Timepublisher_BmLDefaultTPTime_' + SignedInAs, '0800');
 
 if ( $('#ctl00_ContentBody_lnkBookmark').length > 0 ) {
 	var LinkValue  = '<form id="BookPub" name="form1" method="post">';
@@ -160,54 +162,54 @@ if ( $('#ctl00_ContentBody_lnkBookmark').length > 0 ) {
 		LinkValue += '   title="Datum als DD.MM.YYYY">';
 		LinkValue += '  <label for="Wunschzeit"> Zeit:</label>';
 		LinkValue += '  <select name="Wunschzeit" id="Wunschzeit" title="Freischaltezeit auswählen">';
-		LinkValue += '  	<option value="0000">00:00</option>';
-		LinkValue += '  	<option value="0030">00:30</option>';
-		LinkValue += '  	<option value="0100">01:00</option>';
-		LinkValue += '  	<option value="0130">01:30</option>';
-		LinkValue += '  	<option value="0200">02:00</option>';
-		LinkValue += '  	<option value="0230">02:30</option>';
-		LinkValue += '  	<option value="0300">03:00</option>';
-		LinkValue += '  	<option value="0330">03:30</option>';
-		LinkValue += '  	<option value="0400">04:00</option>';
-		LinkValue += '  	<option value="0430">04:30</option>';
-		LinkValue += '  	<option value="0500">05:00</option>';
-		LinkValue += '  	<option value="0530">05:30</option>';
-		LinkValue += '  	<option value="0600">06:00</option>';
-		LinkValue += '  	<option value="0630">06:30</option>';
-		LinkValue += '  	<option value="0700">07:00</option>';
-		LinkValue += '  	<option value="0730">07:30</option>';
-		LinkValue += '  	<option value="0800" selected>08:00</option>';
-		LinkValue += '  	<option value="0830">08:30</option>';
-		LinkValue += '  	<option value="0900">09:00</option>';
-		LinkValue += '  	<option value="0930">09:30</option>';
-		LinkValue += '  	<option value="1000">10:00</option>';
-		LinkValue += '  	<option value="1030">10:30</option>';
-		LinkValue += '  	<option value="1100">11:00</option>';
-		LinkValue += '  	<option value="1130">11:30</option>';
-		LinkValue += '  	<option value="1200">12:00</option>';
-		LinkValue += '  	<option value="1230">12:30</option>';
-		LinkValue += '  	<option value="1300">13:00</option>';
-		LinkValue += '  	<option value="1330">13:30</option>';
-		LinkValue += '  	<option value="1400">14:00</option>';
-		LinkValue += '  	<option value="1430">14:30</option>';
-		LinkValue += '  	<option value="1500">15:00</option>';
-		LinkValue += '  	<option value="1530">15:30</option>';
-		LinkValue += '  	<option value="1600">16:00</option>';
-		LinkValue += '  	<option value="1630">16:30</option>';
-		LinkValue += '  	<option value="1700">17:00</option>';
-		LinkValue += '  	<option value="1730">17:30</option>';
-		LinkValue += '  	<option value="1800">18:00</option>';
-		LinkValue += '  	<option value="1830">18:30</option>';
-		LinkValue += '  	<option value="1900">19:00</option>';
-		LinkValue += '  	<option value="1930">19:30</option>';
-		LinkValue += '  	<option value="2000">20:00</option>';
-		LinkValue += '  	<option value="2030">20:30</option>';
-		LinkValue += '  	<option value="2100">21:00</option>';
-		LinkValue += '  	<option value="2130">21:30</option>';
-		LinkValue += '  	<option value="2200">22:00</option>';
-		LinkValue += '  	<option value="2230">22:30</option>';
-		LinkValue += '  	<option value="2300">23:00</option>';
-		LinkValue += '  	<option value="2330">23:30</option>';
+		LinkValue += '  	<option value="0000" '; if(vBmLDefaultTPTime=="0000") { LinkValue +='selected'; } LinkValue +='>00:00</option>';
+		LinkValue += '  	<option value="0030" '; if(vBmLDefaultTPTime=="0030") { LinkValue +='selected'; } LinkValue +='>00:30</option>';
+		LinkValue += '  	<option value="0100" '; if(vBmLDefaultTPTime=="0100") { LinkValue +='selected'; } LinkValue +='>01:00</option>';
+		LinkValue += '  	<option value="0130" '; if(vBmLDefaultTPTime=="0130") { LinkValue +='selected'; } LinkValue +='>01:30</option>';
+		LinkValue += '  	<option value="0200" '; if(vBmLDefaultTPTime=="0200") { LinkValue +='selected'; } LinkValue +='>02:00</option>';
+		LinkValue += '  	<option value="0230" '; if(vBmLDefaultTPTime=="0230") { LinkValue +='selected'; } LinkValue +='>02:30</option>';
+		LinkValue += '  	<option value="0300" '; if(vBmLDefaultTPTime=="0300") { LinkValue +='selected'; } LinkValue +='>03:00</option>';
+		LinkValue += '  	<option value="0330" '; if(vBmLDefaultTPTime=="0330") { LinkValue +='selected'; } LinkValue +='>03:30</option>';
+		LinkValue += '  	<option value="0400" '; if(vBmLDefaultTPTime=="0400") { LinkValue +='selected'; } LinkValue +='>04:00</option>';
+		LinkValue += '  	<option value="0430" '; if(vBmLDefaultTPTime=="0430") { LinkValue +='selected'; } LinkValue +='>04:30</option>';
+		LinkValue += '  	<option value="0500" '; if(vBmLDefaultTPTime=="0500") { LinkValue +='selected'; } LinkValue +='>05:00</option>';
+		LinkValue += '  	<option value="0530" '; if(vBmLDefaultTPTime=="0530") { LinkValue +='selected'; } LinkValue +='>05:30</option>';
+		LinkValue += '  	<option value="0600" '; if(vBmLDefaultTPTime=="0600") { LinkValue +='selected'; } LinkValue +='>06:00</option>';
+		LinkValue += '  	<option value="0630" '; if(vBmLDefaultTPTime=="0630") { LinkValue +='selected'; } LinkValue +='>06:30</option>';
+		LinkValue += '  	<option value="0700" '; if(vBmLDefaultTPTime=="0700") { LinkValue +='selected'; } LinkValue +='>07:00</option>';
+		LinkValue += '  	<option value="0730" '; if(vBmLDefaultTPTime=="0730") { LinkValue +='selected'; } LinkValue +='>07:30</option>';
+		LinkValue += '  	<option value="0800" '; if(vBmLDefaultTPTime=="0800") { LinkValue +='selected'; } LinkValue +='>08:00</option>';
+		LinkValue += '  	<option value="0830" '; if(vBmLDefaultTPTime=="0830") { LinkValue +='selected'; } LinkValue +='>08:30</option>';
+		LinkValue += '  	<option value="0900" '; if(vBmLDefaultTPTime=="0900") { LinkValue +='selected'; } LinkValue +='>09:00</option>';
+		LinkValue += '  	<option value="0930" '; if(vBmLDefaultTPTime=="0930") { LinkValue +='selected'; } LinkValue +='>09:30</option>';
+		LinkValue += '  	<option value="1000" '; if(vBmLDefaultTPTime=="1000") { LinkValue +='selected'; } LinkValue +='>10:00</option>';
+		LinkValue += '  	<option value="1030" '; if(vBmLDefaultTPTime=="1030") { LinkValue +='selected'; } LinkValue +='>10:30</option>';
+		LinkValue += '  	<option value="1100" '; if(vBmLDefaultTPTime=="1100") { LinkValue +='selected'; } LinkValue +='>11:00</option>';
+		LinkValue += '  	<option value="1130" '; if(vBmLDefaultTPTime=="1130") { LinkValue +='selected'; } LinkValue +='>11:30</option>';
+		LinkValue += '  	<option value="1200" '; if(vBmLDefaultTPTime=="1200") { LinkValue +='selected'; } LinkValue +='>12:00</option>';
+		LinkValue += '  	<option value="1230" '; if(vBmLDefaultTPTime=="1230") { LinkValue +='selected'; } LinkValue +='>12:30</option>';
+		LinkValue += '  	<option value="1300" '; if(vBmLDefaultTPTime=="1300") { LinkValue +='selected'; } LinkValue +='>13:00</option>';
+		LinkValue += '  	<option value="1330" '; if(vBmLDefaultTPTime=="1330") { LinkValue +='selected'; } LinkValue +='>13:30</option>';
+		LinkValue += '  	<option value="1400" '; if(vBmLDefaultTPTime=="1400") { LinkValue +='selected'; } LinkValue +='>14:00</option>';
+		LinkValue += '  	<option value="1430" '; if(vBmLDefaultTPTime=="1430") { LinkValue +='selected'; } LinkValue +='>14:30</option>';
+		LinkValue += '  	<option value="1500" '; if(vBmLDefaultTPTime=="1500") { LinkValue +='selected'; } LinkValue +='>15:00</option>';
+		LinkValue += '  	<option value="1530" '; if(vBmLDefaultTPTime=="1530") { LinkValue +='selected'; } LinkValue +='>15:30</option>';
+		LinkValue += '  	<option value="1600" '; if(vBmLDefaultTPTime=="1600") { LinkValue +='selected'; } LinkValue +='>16:00</option>';
+		LinkValue += '  	<option value="1630" '; if(vBmLDefaultTPTime=="1630") { LinkValue +='selected'; } LinkValue +='>16:30</option>';
+		LinkValue += '  	<option value="1700" '; if(vBmLDefaultTPTime=="1700") { LinkValue +='selected'; } LinkValue +='>17:00</option>';
+		LinkValue += '  	<option value="1730" '; if(vBmLDefaultTPTime=="1730") { LinkValue +='selected'; } LinkValue +='>17:30</option>';
+		LinkValue += '  	<option value="1800" '; if(vBmLDefaultTPTime=="1800") { LinkValue +='selected'; } LinkValue +='>18:00</option>';
+		LinkValue += '  	<option value="1830" '; if(vBmLDefaultTPTime=="1830") { LinkValue +='selected'; } LinkValue +='>18:30</option>';
+		LinkValue += '  	<option value="1900" '; if(vBmLDefaultTPTime=="1900") { LinkValue +='selected'; } LinkValue +='>19:00</option>';
+		LinkValue += '  	<option value="1930" '; if(vBmLDefaultTPTime=="1930") { LinkValue +='selected'; } LinkValue +='>19:30</option>';
+		LinkValue += '  	<option value="2000" '; if(vBmLDefaultTPTime=="2000") { LinkValue +='selected'; } LinkValue +='>20:00</option>';
+		LinkValue += '  	<option value="2030" '; if(vBmLDefaultTPTime=="2030") { LinkValue +='selected'; } LinkValue +='>20:30</option>';
+		LinkValue += '  	<option value="2100" '; if(vBmLDefaultTPTime=="2100") { LinkValue +='selected'; } LinkValue +='>21:00</option>';
+		LinkValue += '  	<option value="2130" '; if(vBmLDefaultTPTime=="2130") { LinkValue +='selected'; } LinkValue +='>21:30</option>';
+		LinkValue += '  	<option value="2200" '; if(vBmLDefaultTPTime=="2200") { LinkValue +='selected'; } LinkValue +='>22:00</option>';
+		LinkValue += '  	<option value="2230" '; if(vBmLDefaultTPTime=="2230") { LinkValue +='selected'; } LinkValue +='>22:30</option>';
+		LinkValue += '  	<option value="2300" '; if(vBmLDefaultTPTime=="2300") { LinkValue +='selected'; } LinkValue +='>23:00</option>';
+		LinkValue += '  	<option value="2330" '; if(vBmLDefaultTPTime=="2330") { LinkValue +='selected'; } LinkValue +='>23:30</option>';
 		LinkValue += '  </select>';
 		LinkValue += '  <select name="Wunschtyp" id="Wunschtyp" title="Hinweis Text-Ausgabeart zum CO">';
 		if (vBmLDefaultTPType=='Morgen')
@@ -638,6 +640,7 @@ function addLeadingZeros(number, length) {
 		var vBmLTemplate_Wunsch_val    	= GM_getValue('Timepublisher_BmLTemplate_Wunsch_'    + SignedInAs, GetDefaultTemplateText_wunsch());
 		var vBmLTemplate_Sonstiges_val 	= GM_getValue('Timepublisher_BmLTemplate_Sonstiges_' + SignedInAs, GetDefaultTemplateText_sonstiges());
 		var vBmLDefaultTPType			= GM_getValue('Timepublisher_BmLDefaultTPType_'		 + SignedInAs, 'Morgen');
+		var vBmLDefaultTPTime			= GM_getValue('Timepublisher_BmLDefaultTPTime_'		 + SignedInAs, '0800');
 		
 		// Interface controls
 		var Opt1 = document.createElement('span');
@@ -673,6 +676,13 @@ function addLeadingZeros(number, length) {
 		Opt6.innerHTML = '<br>Voreingestellter Timepublish-Typ: <br>';
 		var txtBmLDefaultTPType = fCreateSetting('optDefaultTPType', 'select', '', '', vBmLDefaultTPType, '215px',vSelVal, vSelTxt);
 		txtBmLDefaultTPType.parentNode.insertBefore(Opt6, txtBmLDefaultTPType);
+		
+		var Opt7 = document.createElement('span');
+		var vSelVal = ["0000","0030","0100","0130","0200","0230","0300","0330","0400","0430","0500","0530","0600","0630","0700","0730","0800","0830","0900","0930","1000","1030","1100","1130","1200"];
+		var vSelTxt = ["00:00","00:30","01:00","01:30","02:00","02:30","03:00","03:30","04:00","04:30","05:00","05:30","06:00","06:30","07:00","07:30","08:00","08:30","09:00","09:30","10:00","10:30","11:00","11:30","12:00"];
+		Opt7.innerHTML = '<br>Voreingestellte Timepublish-Uhrzeit: <br>';
+		var txtBmLDefaultTPTime = fCreateSetting('optDefaultTPTime', 'select', '', '', vBmLDefaultTPTime, '215px',vSelVal, vSelTxt);
+		txtBmLDefaultTPTime.parentNode.insertBefore(Opt7, txtBmLDefaultTPTime);
 		
 		//  Create Save/Cancel Buttons.
 		var ds_ButtonsP = document.createElement('div');
@@ -721,6 +731,7 @@ function addLeadingZeros(number, length) {
 		var vBmLTemplate_Wunsch_val = document.getElementById('txtaraoptBmLTemplate_Wunsch');
 		var vBmLTemplate_Sonstiges_val = document.getElementById('txtaraoptBmLTemplate_Sonstiges');
 		var vBmLDefaultTPType = document.getElementById('seloptDefaultTPType');
+		var vBmLDefaultTPTime = document.getElementById('seloptDefaultTPTime');
 		
 		GM_setValue('Timepublisher_BmLName_' + SignedInAs, vBmLName_val.value.trim());
 		GM_setValue('Timepublisher_BmLStop_' + SignedInAs, vBmLStop_val.options[vBmLStop_val.selectedIndex].value);
@@ -728,6 +739,7 @@ function addLeadingZeros(number, length) {
 		GM_setValue('Timepublisher_BmLTemplate_Wunsch_' + SignedInAs, vBmLTemplate_Wunsch_val.value.trim());
 		GM_setValue('Timepublisher_BmLTemplate_Sonstiges_' + SignedInAs, vBmLTemplate_Sonstiges_val.value);
 		GM_setValue('Timepublisher_BmLDefaultTPType_' + SignedInAs, vBmLDefaultTPType.options[vBmLDefaultTPType.selectedIndex].value);
+		GM_setValue('Timepublisher_BmLDefaultTPTime_' + SignedInAs, vBmLDefaultTPTime.options[vBmLDefaultTPTime.selectedIndex].value);
 
 		fCloseSettingsDiv();
 	}
